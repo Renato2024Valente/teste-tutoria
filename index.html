@@ -115,7 +115,12 @@ document.onkeydown = function(e) {
     
 
     <div class="container">
-  
+        <div class="form-group">
+            <label for="filtroSerie">Filtrar por Série</label>
+            <input type="text" class="form-control" id="filtroSerie" placeholder="Ex: 8A, 9B">
+        </div>
+        
+              
         <!-- CAMPO DE BUSCA DENTRO DA CONTAINER -->
         <div class="form-group">
             <label for="filtroNome">Buscar Tutorias por Nome</label>
@@ -433,6 +438,8 @@ document.onkeydown = function(e) {
 // buscar a tutoria
 function buscarTutoriasPorNome(nomeBuscado) {
     const tutor = document.getElementById('nomeTutor').value;
+    const serieFiltro = document.getElementById('filtroSerie').value.toLowerCase();
+    const dataFiltro = document.getElementById('filtroData').value; // formato yyyy-mm-dd
 
     database.ref('tutorias/' + tutor).once('value')
         .then(snapshot => {
@@ -440,18 +447,88 @@ function buscarTutoriasPorNome(nomeBuscado) {
             const resultado = [];
 
             for (let id in todas) {
-                if (todas[id].nomeAluno.toLowerCase().includes(nomeBuscado.toLowerCase())) {
-                    resultado.push(todas[id]);
+                const tutoria = todas[id];
+                const nomeAluno = tutoria.nomeAluno.toLowerCase();
+                const serie = tutoria.serie.toLowerCase();
+                const dataHora = tutoria.dataHora.split(" ")[0]; // pega apenas a data
+                const dataFormatada = formatarDataInput(dataHora); // converte para yyyy-mm-dd
+
+                if (
+                    nomeAluno.includes(nomeBuscado.toLowerCase()) &&
+                    (serieFiltro === "" || serie.includes(serieFiltro)) &&
+                    (dataFiltro === "" || dataFiltro === dataFormatada)
+                ) {
+                    resultado.push(tutoria);
                 }
             }
-            console.log("Resultado da busca:", resultado);
 
-            // Aqui você pode exibir no HTML futuramente
+            const tutoriaList = document.getElementById('tutoriaList');
+            tutoriaList.innerHTML = '';
+
+            resultado.forEach((tutoria, index) => {
+                const tutoriaItem = document.createElement('div');
+                tutoriaItem.className = 'tutoria-item';
+
+                const tutoriaInfo = document.createElement('div');
+                tutoriaInfo.innerHTML = `<strong>${tutoria.nomeAluno}</strong> - ${tutoria.dataHora} <span style="color: green; font-weight: bold;">🔥 Firebase</span>`;
+
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'btn-group';
+
+                const btnSavePDF = document.createElement('button');
+                btnSavePDF.className = 'btn btn-sm btn-success';
+                btnSavePDF.innerText = 'Salvar em PDF';
+                btnSavePDF.onclick = () => {
+                    const pdf = new jspdf.jsPDF();
+                    pdf.text(`Tutoria de ${tutoria.nomeAluno}`, 10, 10);
+                    const columns = ["Campo", "Informação"];
+                    const rows = [
+                        ["Tutor", tutoria.nomeTutor],
+                        ["Telefone/Celular", tutoria.telefoneCelular],
+                        ["Série", tutoria.serie],
+                        ["Projeto de Vida", tutoria.projetoVida],
+                        ["Assunto Pessoal", tutoria.assuntoPessoal],
+                        ["Check Pessoal", tutoria.checkPessoal ? 'Sim' : 'Não'],
+                        ["Check Pedagógico", tutoria.checkPedagogico ? 'Sim' : 'Não'],
+                        ["Check Família", tutoria.checkFamilia ? 'Sim' : 'Não'],
+                        ["Check Emergência", tutoria.checkEmergencia ? 'Sim' : 'Não'],
+                        ["Check Prova Paulista", tutoria.checkProvaPaulista ? 'Sim' : 'Não'],
+                        ["Check Notas Bimestrais", tutoria.checkNotasBimestrais ? 'Sim' : 'Não'],
+                        ["Check Comportamento", tutoria.checkComportamento ? 'Sim' : 'Não'],
+                        ["Carimbo do Gestor", tutoria.carimboGestor],
+                        ["Data e Hora", tutoria.dataHora]
+                    ];
+                    pdf.autoTable(columns, rows, { startY: 20 });
+
+                    const imgAluno = new Image();
+                    imgAluno.src = tutoria.assinaturaAluno;
+                    imgAluno.onload = function () {
+                        pdf.addImage(imgAluno, 'PNG', 10, pdf.autoTable.previous.finalY + 10, 180, 40);
+                        pdf.save(`Tutoria_${tutoria.nomeAluno}.pdf`);
+                    };
+                };
+
+                btnGroup.appendChild(btnSavePDF);
+                tutoriaItem.appendChild(tutoriaInfo);
+                tutoriaItem.appendChild(btnGroup);
+                tutoriaList.appendChild(tutoriaItem);
+            });
         })
         .catch(error => {
             console.error("Erro na busca:", error);
         });
 }
+
+// Converte de dd/mm/aaaa para yyyy-mm-dd
+function formatarDataInput(dataBr) {
+    const partes = dataBr.split('/');
+    if (partes.length === 3) {
+        return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+    }
+    return "";
+}
+
+
 
         // Função para limpar o formulário
         function clearForm() {
