@@ -90,6 +90,8 @@ document.onkeydown = function(e) {
 
 </head>
 <body>
+    
+
     <div class="container">
   
         <!-- CAMPO DE BUSCA DENTRO DA CONTAINER -->
@@ -98,7 +100,9 @@ document.onkeydown = function(e) {
             <div class="input-group mb-3">
                 <input type="text" id="filtroNome" class="form-control" placeholder="Digite o nome do aluno">
                 <div class="input-group-append">
+                    
                     <button class="btn btn-success" type="button" onclick="buscarTutoriasPorNome(document.getElementById('filtroNome').value)">Buscar</button>
+
                 </div>
             </div>
         </div>
@@ -560,6 +564,16 @@ function buscarTutoriasPorNome(nomeBuscado) {
             const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
             window.open(url, '_blank');
         }
+        function buscarComSenha() {
+    const nome = document.getElementById('filtroNome').value;
+    const senha = document.getElementById('senhaGestor').value;
+
+    if (senha === "1234") {
+        buscarTutoriasPorNome(nome);
+    } else {
+        alert("Senha incorreta! Acesso negado à busca.");
+    }
+}
 
         // Inicializar a lista de tutorias
         renderTutoriaList();
