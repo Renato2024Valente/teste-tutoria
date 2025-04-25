@@ -432,13 +432,8 @@ document.onkeydown = function(e) {
           
 // buscar a tutoria
 function buscarTutoriasPorNome(nomeBuscado) {
-    const senha = document.getElementById('senhaGestor').value;
-
-    if (senha !== "1234") {
-        alert("Senha incorreta! Acesso negado à busca.");
-        return;
-    }
     const tutor = document.getElementById('nomeTutor').value;
+
     database.ref('tutorias/' + tutor).once('value')
         .then(snapshot => {
             const todas = snapshot.val();
@@ -449,7 +444,6 @@ function buscarTutoriasPorNome(nomeBuscado) {
                     resultado.push(todas[id]);
                 }
             }
-
             console.log("Resultado da busca:", resultado);
 
             // Aqui você pode exibir no HTML futuramente
@@ -589,16 +583,7 @@ function buscarTutoriasPorNome(nomeBuscado) {
             const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
             window.open(url, '_blank');
         }
-        function buscarComSenha() {
-    const nome = document.getElementById('filtroNome').value;
-    const senha = document.getElementById('senhaGestor').value;
-
-    if (senha === "1234") {
-        buscarTutoriasPorNome(nome);
-    } else {
-        alert("Senha incorreta! Acesso negado à busca.");
-    }
-}
+       
 
         // Inicializar a lista de tutorias
         renderTutoriaList();
@@ -615,6 +600,8 @@ function buscarTutoriasPorNome(nomeBuscado) {
     } else {
         alert("Senha incorreta! Acesso negado à busca.");
     }
+
+    
 }
 
 
