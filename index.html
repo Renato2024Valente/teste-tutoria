@@ -89,6 +89,28 @@ document.onkeydown = function(e) {
 </script>
 
 </head>
+
+<!-- Modal para senha -->
+<div class="modal fade" id="modalSenha" tabindex="-1" role="dialog" aria-labelledby="modalSenhaLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalSenhaLabel">Acesso restrito</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="password" class="form-control" id="senhaModal" placeholder="Digite a senha para buscar tutorias">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" onclick="validarSenhaModal()">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 <body>
     
 
@@ -101,7 +123,8 @@ document.onkeydown = function(e) {
                 <input type="text" id="filtroNome" class="form-control" placeholder="Digite o nome do aluno">
                 <div class="input-group-append">
                     
-                    <button class="btn btn-success" type="button" onclick="buscarTutoriasPorNome(document.getElementById('filtroNome').value)">Buscar</button>
+                    <button class="btn btn-success" type="button" data-toggle="modal" data-target="#modalSenha">Buscar</button>
+
 
                 </div>
             </div>
@@ -399,14 +422,15 @@ document.onkeydown = function(e) {
             // 🔐 Envia para Firebase se a senha estiver correta
     const senha = document.getElementById('senhaGestor').value;
     if (senha === "1234") {
-        const novaTutoriaRef = database.ref('tutorias').push();
-        novaTutoriaRef.set(tutoriaData)
-            .then(() => console.log("Tutoria salva no Firebase"))
-            .catch(error => console.error("Erro ao salvar no Firebase", error));
-        }
+    const tutor = document.getElementById('nomeTutor').value;
+    const ref = database.ref('tutorias/' + tutor).push();
+    ref.set(tutoriaData)
+        .then(() => console.log("Tutoria salva no Firebase por tutor"))
+        .catch(error => console.error("Erro ao salvar no Firebase", error));
+}
     }
           
-
+// buscar a tutoria
 function buscarTutoriasPorNome(nomeBuscado) {
     const senha = document.getElementById('senhaGestor').value;
 
@@ -414,8 +438,8 @@ function buscarTutoriasPorNome(nomeBuscado) {
         alert("Senha incorreta! Acesso negado à busca.");
         return;
     }
-
-    database.ref('tutorias').once('value')
+    const tutor = document.getElementById('nomeTutor').value;
+    database.ref('tutorias/' + tutor).once('value')
         .then(snapshot => {
             const todas = snapshot.val();
             const resultado = [];
@@ -427,6 +451,7 @@ function buscarTutoriasPorNome(nomeBuscado) {
             }
 
             console.log("Resultado da busca:", resultado);
+
             // Aqui você pode exibir no HTML futuramente
         })
         .catch(error => {
@@ -577,6 +602,24 @@ function buscarTutoriasPorNome(nomeBuscado) {
 
         // Inicializar a lista de tutorias
         renderTutoriaList();
+
+        // validar tutoria
+
+        function validarSenhaModal() {
+    const senha = document.getElementById('senhaModal').value;
+    const nome = document.getElementById('filtroNome').value;
+
+    if (senha === "1234") {
+        $('#modalSenha').modal('hide'); // Fecha o modal
+        buscarTutoriasPorNome(nome);   // Executa a busca
+    } else {
+        alert("Senha incorreta! Acesso negado à busca.");
+    }
+}
+
+
+
+
     </script>
 </body>
 </html>
